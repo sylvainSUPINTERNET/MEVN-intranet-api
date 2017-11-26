@@ -24,7 +24,15 @@ const userSchema = new mongoose.Schema({
             ref: 'Mater'
         }
     ],
+    grades: [
+        {
+            type: ObjectId,
+            ref: 'Grade'
+        }
+    ],
     role: String,
 });
+
+
 
 module.exports = mongoose.model('User', userSchema);

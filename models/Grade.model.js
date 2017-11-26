@@ -15,22 +15,20 @@ const ObjectId  = mongoose.Schema.Types.ObjectId; //permet de creer un champ qui
 mongoose.Promise = global.Promise;
 
 
-const materSchema = new mongoose.Schema({
-    name: String,
-    users: [
+const gradeSchema = new mongoose.Schema({
+    value: Number,
+    total: Number,
+    mater:
         {
             type: ObjectId,
-            ref: 'User'
-        }
-    ],
-    grades: [
-        {
-            type: ObjectId,
-            ref: 'Grade'
-        }
-    ]
+            ref: 'Mater'
+        },
+    user: {
+        type: ObjectId,
+        ref: 'User'
+    }
 
 });
 
 
-module.exports = mongoose.model('Mater', materSchema);
+module.exports = mongoose.model('Grade', gradeSchema);

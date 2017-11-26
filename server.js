@@ -21,6 +21,7 @@ const sha256 = require('sha256');
 // /* CONTROLLER */
 const UserCtrl = require('./controllers/User.controller');
 const MaterCtrl = require('./controllers/Mater.controller');
+const GradeCtrl = require('./controllers/Grade.controller');
 
 /* server instanciate and config router */
 const api = express();
@@ -37,6 +38,21 @@ api.use(bodyParser.json());
 // DEBUG for console
 api.use(morgan('dev'));
 
+
+//config header
+api .use(function (req,res,next) {
+    //on intranet (client) else *
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:8080');
+    // Request methods you wish to allow
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    // Request headers you wish to allow
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    // Set to true if you need the website to include cookies in the requests sent
+    // to the API (e.g. in case you use sessions)
+    res.setHeader('Access-Control-Allow-Credentials', true);
+
+    next();
+});
 
 
 // ROUTE
@@ -72,6 +88,10 @@ api.post('/user/promote', function(req,res){
     UserCtrl.promoteUser(req,res);
 });
 
+api.post('/user/profile', function(req,res){
+    UserCtrl.decodeMyToken(req,res);
+});
+
 
 /* MATER */
 api.post('/mater/add', function(req,res){
@@ -82,6 +102,14 @@ api.post('/mater/addUser', function(req,res){
     MaterCtrl.addUserForMater(req,res);
 });
 
+api.post('/mater/deleteUser', function(req,res){
+    MaterCtrl.deleteUserForMater(req,res);
+});
+
+api.post('/mater/delete', function(req,res){
+    MaterCtrl.deleteMater(req,res);
+});
+
 api.get('/mater/list', function(req,res){
     MaterCtrl.listMater(req,res);
 });
@@ -89,6 +117,19 @@ api.get('/mater/list', function(req,res){
 
 
 /* NOTE */
+api.post('/grade/add', function(req,res){
+    GradeCtrl.addGrade(req,res);
+});
+
+api.get('/grade/list', function(req,res){
+    GradeCtrl.listGrade(req,res);
+});
+
+api.post('/grade/delete', function(req,res){
+    GradeCtrl.deleteGrade(req,res);
+});
+
+
 
 
 
@@ -119,7 +160,7 @@ api.get('/user/promote/test',function(req,res){
 
 
 //run
-let port = process.env.PORT || 8080; // used to create, sign, and verify tokens
+let port = process.env.PORT || 1337; // used to create, sign, and verify tokens
 api.listen(port);
 console.log('API intranet run at http://localhost:' + port);
 

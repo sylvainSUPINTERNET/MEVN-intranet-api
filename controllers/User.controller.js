@@ -21,11 +21,20 @@ const random = require('../utils/random');
 const checkToken = require('../utils/checkToken');
 
 
-
+//TODO:: // si il y a des undefined sur req.body c'est parce que aximo ajoute un body donc req.body.body.propl
 module.exports = {
+    decodeMyToken: function(req,res){
+        let dataPostedByApp = req.body.token;
+        if(dataPostedByApp){
+            checkToken(req, function(decoded){
+                console.log(decoded);
+                res.json(decoded);
+            });
+        }
+    },
     addUser: function (req, res) {
 
-        let dataPostedByApp = req.body; //json received from API call app post
+        let dataPostedByApp = req.body.body; //json received from API call app post
 
         let errors = {
             name: "",
@@ -123,20 +132,25 @@ module.exports = {
     },
 
     loginUser: function (req, res) {
+
+        let dataPostedByApp = req.body.body; //json received from API call app post
+
+        let email = String(dataPostedByApp.email)
+        let password = String(dataPostedByApp.password);
+
         // find the user
         User.findOne({
-            name: req.body.name
+            email: email
         }, function (err, user) {
 
             if (err) throw err;
-
             if (!user) {
                 res.json({error: true, message: 'Login failed. User not found.'});
                 //console.log(user);
                 //redirect to inscription page
             } else if (user) {
                 // check if password matches
-                if (user.password !== sha256(req.body.password + user.salt)) {
+                if (user.password !== sha256(password + user.salt)) {
                     res.json({error: true, message: 'Login failed. Wrong password.'});
                 } else {
 
@@ -165,48 +179,46 @@ module.exports = {
     },
     listUser: function (req, res) {
         //TODO .populate avec un objet mater / grade etc par la suite
-        checkToken(req, function (data) { //data est la reponse JSON du test du token si success => token SINON error message classic
-            if (data.error === true) {
-                //error
-                res.json(data)
-            } else {
                 //call mongoose
                 User.find().then(function (users) {
-                        res.json(users);
+                        res.json({error:false, message: users});
                     })
                     //erreur mongoose
                     .catch(function (err) {
-                        res.json(err)
+                        res.json({error: true, message: err})
                     });
-            }
-        });
+    },
+
+    promoteUser: function(req,res){
+        let dataPosted = req.body.body
+        let user_role = dataPosted.user_role;
+        let user_id = dataPosted.user_id;
+
+        const ROLE_ETUDIANT = "ROLE_ETUDIANT";
+        const ROLE_PROFESSEUR = "ROLE_PROFESSEUR";
+
+        if(user_id && user_role){
+            User
+                .findOne({_id: user_id})
+                .then(function(user){
+                    if(user){
+                        if(user_role === ROLE_ETUDIANT){
+                            //devient professeur
+                            user.role = ROLE_PROFESSEUR
+                            user.save().catch(err => console.log(err))
+                        }else{
+                            //devient etudiant
+                            user.role = ROLE_ETUDIANT
+                            user.save().catch(err => console.log(err))
+                        }
+                    }else{
+                        res.json({error:true, message:"Cant change the role of this User, user not found !"})
+                    }
+                 })
+                .catch(err => console.log(err))
+        }
 
     },
-    promoteUser: function(req,res){
-        let dataPosted = req.body
-        checkToken(req, function (data) { //data est la reponse JSON du test du token si success => token SINON error message classic
-            if (data.error === true) {
-                //error
-                res.json(data)
-            } else {
-                //call mongoose
-                User.find({name: dataPosted.name}).then(function (user) {
-                    if(user){
-                        user[0].role = dataPosted.role;
-                        user[0].save(function(err, userUpdated){
-                            res.json({error: false, message: userUpdated})
-                        }).catch(err => console.log(err));
-                    }else{
-                        res.json({error: true, message: "User is not definied !"})
-                    }
-                }).catch(err => console.log())
-                //erreur mongoose
-                    .catch(function (err) {
-                        res.json(err)
-                    });
-            }
-        });
-    }
 
     //TODO: // suite route API
 };
