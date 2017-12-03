@@ -54,7 +54,7 @@ module.exports = {
             errors.name += "Votre nom doit faire minimum 3 caractères !";
         }
         if (password.length <= 3 || typeof password !== 'string') {
-            errors.password += "Votre nom doit faire minimum 3 caractères !";
+            errors.password += "Votre password doit faire minimum 3 caractères !";
         }
 
         if (passwordConfirmed.length <= 3 || typeof passwordConfirmed !== 'string' || passwordConfirmed !== password) {
@@ -180,7 +180,7 @@ module.exports = {
     listUser: function (req, res) {
         //TODO .populate avec un objet mater / grade etc par la suite
                 //call mongoose
-                User.find().then(function (users) {
+                User.find().populate('maters grades').then(function (users) {
                         res.json({error:false, message: users});
                     })
                     //erreur mongoose
@@ -188,7 +188,18 @@ module.exports = {
                         res.json({error: true, message: err})
                     });
     },
+    deleteUser: function(req,res){
+        let user_id = req.body.body;
 
+        if(user_id){
+            User.findOne({_id: user_id}).then(function(user){
+                console.log("USER TO DELETE", user)
+                user.remove().catch(err => console.log(err));
+            })
+        }else{
+            res.json({error:true, message: "No user to delete"})
+        }
+    },
     promoteUser: function(req,res){
         let dataPosted = req.body.body
         let user_role = dataPosted.user_role;
@@ -218,6 +229,19 @@ module.exports = {
                 .catch(err => console.log(err))
         }
 
+    },
+
+    profileByNameUser: function(req,res){
+        let name = req.params.name;
+        console.log("find by " + name);
+            User
+                .findOne({name: name }).populate('maters grades').then(function(user){
+                    if(user){
+                        res.json({error:false, message:user})
+                    }else{
+                        res.json({error:true, message:'no user found!'})
+                    }
+            })
     },
 
     //TODO: // suite route API

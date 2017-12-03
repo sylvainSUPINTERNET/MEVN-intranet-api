@@ -32,14 +32,48 @@ module.exports = {
                 let grade_user = dataPostedByApp.grade_user;  //name
                 let grade_mater = dataPostedByApp.grade_mater; //name
 
-                if(grade_value && grade_total && grade_user!== ""){
+
+
+                if(grade_value && grade_total && grade_user!== "") {
                     User
-                        .findOne({name: grade_user })
-                        .then(function(user){
-                            if(user){
+                        .findOne({name: grade_user})
+                        .then(function (user) {
+                            if (user) {
                                 Mater
                                     .findOne({name: grade_mater})
-                                    .then(function(mater){
+                                    .then(function (mater) {
+                                        console.log("MATER TO CHECK IF USER IS INSIDE", mater);
+                                        console.log(mater.users.indexOf(user._id))
+                                        if (mater.users.length !== 0) {
+                                                console.log(mater.users.indexOf(user._id));
+                                                if(mater.users.indexOf(String(user._id)) > -1){
+                                                    let grade = new Grade({
+                                                        value: grade_value,
+                                                        total: grade_total,
+                                                        mater: mater._id,
+                                                        user: user._id,
+                                                    });
+
+                                                    grade.save().catch(err => console.log(err))
+
+                                                    mater.grades.push(grade);
+                                                    user.grades.push(grade);
+                                                    mater.save().catch(err => console.log(err))
+                                                    user.save().catch(err => console.log(err))
+                                                }else{
+                                                    res.json({error:true, message: "user not found in this matter, cant add grade"})
+                                                }
+
+                                        } else {
+                                            res.json({error:true, message: "Error, user is not register for this mater"})
+                                        }
+                                    }).catch(err => console.log(err))
+                            }
+                        }).catch(err => console.log(err))
+                }
+
+
+                                        /*
                                         if(mater){
                                             console.log("USER", user);
                                             console.log("MATER", mater);
@@ -61,15 +95,7 @@ module.exports = {
 
                                         }else{
                                             res.json({error:true, message:"Not mater found for this name"})
-                                        }
-                                    }).catch(err => console.log(err))
-                            }else{
-                                res.json({error:true, message:"User not found for this name"})
-                            }
-                        }).catch(err => console.log(err))
-                }else{
-                    res.json({error: true, message: "Your grade fiels are undefined or not correct  ! "});
-                }
+                                        } */
 
     },
 

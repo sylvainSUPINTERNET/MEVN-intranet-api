@@ -23,6 +23,12 @@ const UserCtrl = require('./controllers/User.controller');
 const MaterCtrl = require('./controllers/Mater.controller');
 const GradeCtrl = require('./controllers/Grade.controller');
 
+
+const checkToken = require('./utils/checkToken');
+let jwt_decode = require('jwt-decode');
+
+
+
 /* server instanciate and config router */
 const api = express();
 api.use(cookieParser()); // cookie manager
@@ -92,6 +98,13 @@ api.post('/user/profile', function(req,res){
     UserCtrl.decodeMyToken(req,res);
 });
 
+api.post('/user/delete', function(req,res){
+    UserCtrl.deleteUser(req,res);
+});
+
+api.get('/user/profile/:name', function(req,res){
+    UserCtrl.profileByNameUser(req,res);
+});
 
 /* MATER */
 api.post('/mater/add', function(req,res){
@@ -127,6 +140,15 @@ api.get('/grade/list', function(req,res){
 
 api.post('/grade/delete', function(req,res){
     GradeCtrl.deleteGrade(req,res);
+});
+
+
+/* DECODED TOKEN */
+//TODO: faire sur le delete user le remove cookie
+api.post('/token/decoded',function(req,res){
+    let decoded = jwt_decode(req.body.body);
+    let name = decoded.name
+    res.json({error:false, message: name})
 });
 
 
