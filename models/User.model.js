@@ -52,7 +52,7 @@ userSchema.pre('remove',function(next){
                 materToUpdate.update(
                     { },
                     { "$pull": { "users": self._id } },
-                    { "multi": true },
+                    { "multi": true }
                 )
 
             });
